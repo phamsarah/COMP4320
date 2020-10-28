@@ -83,7 +83,7 @@ void writeToFile(int serverSocket, struct sockaddr_storage socketStorage){
     }
 }
 
-int main(){
+int main(void){
     printf("main method is being called");
     connectToClient();
     writeToFile(serverSocket, socketStorage);
