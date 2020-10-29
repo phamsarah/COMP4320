@@ -42,10 +42,9 @@ int connectToClient(){
 
     printf("Success: Server Socket %i Call\n", serverSocket);
 
-    
+
     serverAddress.sin_family = AF_INET; // Binding the socket with an address so that the remote process can refer to it
     serverAddress.sin_port = htons(9002); // Binding a port number to the socket
-    // for test: replace htonl(INADDR_ANY) to 127.0.0.1, but we cannot use that per description
     serverAddress.sin_addr.s_addr = INADDR_ANY; // sin_addr is the socket ip address, we set the current host IP address: INADDR_ANY. 
 
     //bzero((char *) &serverAddress, sizeof (serverAddress));
@@ -72,21 +71,69 @@ int connectToClient(){
     return 0;
 }
 
+
+/**
+*   writeToFile creates a file and transmits the message to another socket
+*   Parameters:
+*   serverSocket - our server socket
+*   socketStorage - our size of our socket
+*/
 void writeToFile(int serverSocket, struct sockaddr_storage socketStorage){
-    FILE *file = fopen("test.txt", "w");
+    FILE *file;
     struct sockaddr_in temp_address;
-    socklen_t addressSize = sizeof(temp_address);
+
     
     char buffer[MAX_SIZE];
     int character = 1;
 
-    if(file == NULL) errx(1, "File creation error");
+    
 
     socklen_t addressSize = sizeof(socketStorage);
-    while(character != '0'){
+
+    // recvfrom receives a message from a socket, retrieves source address of received data
+    character = recvfrom(serverSocket, buffer, MAX_SIZE, MSG_WAITALL, (struct sockaddr *)&temp_address, &addressSize);
+    printf("%s\n", buffer);
+    char* newFile;
+    newFile = parseStrToToken(1, buffer);
+    file = fopen(newFile, "w");
+
+    // bzero erases data in the MAX_SIZE bytes of the memory starting at buffer location by writing zeros
+    bzero(buffer, MAX_SIZE);
+
+    if(file == NULL) errx(1, "File creation error");
+
+    // We loop through the buffer until we reach a null terminator \0
+    while(character != '\0'){
         character = recvfrom(serverSocket, buffer, MAX_SIZE, MSG_WAITALL, (struct sockaddr *) &socketStorage, &addressSize);
         if(buffer[0] == '\0') break;
     }
+
+    return;
+}
+
+
+/**
+ * parseStrToToken - method that will parse any given string to a sequence of tokens, loops through the string that is split by whitespaces
+ * Parameters:
+ * pointer - value of end of token, tells us when to break out of the loop
+ * buffer - our string buffer 
+*/
+char *parseStrToToken(int pointer, char *buffer){
+    int i = 0;
+    char *temp;
+
+    // strtok_r is used to break up the string by delimiters
+    char *token;
+    token = strtok_r(buffer, " ", &temp); 
+
+    while(token != NULL){
+        if(i == pointer) break;
+        else i++;
+
+        token = strtok_r(NULL, " ", &temp);
+    }
+
+    return token;
 }
 
 int main(void){
