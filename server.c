@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <err.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <strings.h>
+#include <sys/types.h>
 
 #define MAX_SIZE 128
 
@@ -23,7 +26,6 @@ struct sockaddr_storage socketStorage;
 socklen_t socketAddressSize;
 
 int connectToClient(){
-    printf("this method works");
     /** 
      * Socket method returns a nonnegative number integer if successful. Creates an unbound socket in a communications domain, and returns a file descriptor that can be used in later function calls that operate on sockets
      * 
@@ -31,22 +33,22 @@ int connectToClient(){
      *   SOCK_DGRAM = is a datagram based protocol used by UDP; send one datagram and receive one reply then connection terminates
      *   0 = protocol of 0 causes socket() to use an unspecified default protocol appropriate for the requested socket type
     **/ 
-    if((serverSocket = socket(PF_INET, SOCK_DGRAM, 0)) == -1){
+    if((serverSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0){
         // errx produces an error message
         errx(1, "Socket call error");
         printf("Error calling socket");
         exit(EXIT_FAILURE);
     }
 
-    printf("Success: Server Socket Call");
+    printf("Success: Server Socket %i Call\n", serverSocket);
 
     
     serverAddress.sin_family = AF_INET; // Binding the socket with an address so that the remote process can refer to it
-    serverAddress.sin_port = 8080; // Binding a port number to the socket
+    serverAddress.sin_port = htons(9002); // Binding a port number to the socket
     // for test: replace htonl(INADDR_ANY) to 127.0.0.1, but we cannot use that per description
-    serverAddress.sin_addr.s_addr = htonl(INADDR_ANY); // sin_addr is the socket ip address, we set the current host IP address: INADDR_ANY. 
+    serverAddress.sin_addr.s_addr = INADDR_ANY; // sin_addr is the socket ip address, we set the current host IP address: INADDR_ANY. 
 
-
+    //bzero((char *) &serverAddress, sizeof (serverAddress));
     /**
      * bind method in socket.h library assigns a local socket addr to a socket identified by descriptor socket, which has no local socket addr assigned
      * - basically binds a name to a socket
@@ -57,8 +59,9 @@ int connectToClient(){
      * address - points to a sockaddr structure containing address to be bound
      * address_len - specifies length of sockaddr structure
      **/
-    if((bind(serverSocket, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) == -1){
+    if(bind(serverSocket, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0){
         errx(1, "Socket address binding error");
+        printf("socket binding error\n");
         exit(EXIT_FAILURE);
     }
 
@@ -71,6 +74,9 @@ int connectToClient(){
 
 void writeToFile(int serverSocket, struct sockaddr_storage socketStorage){
     FILE *file = fopen("test.txt", "w");
+    struct sockaddr_in temp_address;
+    socklen_t addressSize = sizeof(temp_address);
+    
     char buffer[MAX_SIZE];
     int character = 1;
 
@@ -84,8 +90,8 @@ void writeToFile(int serverSocket, struct sockaddr_storage socketStorage){
 }
 
 int main(void){
-    printf("main method is being called");
     connectToClient();
+    printf("Server Socket: %i", serverSocket);
     writeToFile(serverSocket, socketStorage);
 
     return 0;
