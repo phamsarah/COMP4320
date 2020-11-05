@@ -6,7 +6,7 @@
 #include <time.h>
 #include <netdb.h>
 
-#define SIZE 128
+#define MAX_SIZE 128
 
 // sockaddr_in is a predefined struct in the in.h library, contains the information about the address coming in
 struct sockaddrin serverAddress;
@@ -34,9 +34,16 @@ int checksum(char *data) {
 
 }
 
-//sends file to server after running it through gremlin function
-void send(char *filename, int clientfd, struct sockaddrin server) {
-
+/**
+ * send - sends file to server after running it through gremlin function
+ * Parameters:
+ * file - the given file we want to send
+ * clientfd - the socket 
+ * 
+ */
+void send(int clientfd, struct sockaddrin server, char *file) {
+    char buffer[MAX_SIZE];
+    
 }
 
 
@@ -46,12 +53,9 @@ void send(char *filename, int clientfd, struct sockaddrin server) {
 int main(int argc, char *argv[]) {
 
     char *ip = "127.0.0.1";
-    int port = 8080;
-    int clientfd;
-
-    FILE *f;
-    char *filename = "client.txt";
-
+    char *file = "client.txt";
+    int port = 8080, clientfd;
+    
     //gets probablities of loss and damage from runtime arguments
     damageProb = atof(argv[1]);
     lossProb = atof(argv[2]);
@@ -59,10 +63,11 @@ int main(int argc, char *argv[]) {
     //gets socket descriptor (-1 if failed)
     clientfd = socket(AF_INET, SOCK_DGRAM,0);
     if (clientfd == -1) {
-        perror("ERROR Socket failed to open succesfully");
+        perror("ERROR: Socket Failed to Open");
         exit(0);
     }
 
+    printf("Success: Server Socket has been Created!");
 
     struct sockaddr_in server;
     server.sin_family = AF_INET;
@@ -71,7 +76,10 @@ int main(int argc, char *argv[]) {
     //converts IP address in number-and-dots to unsigned long
     server.sin_addr.s_addr = inet_addr(ip);
 
-    //will send file to server after runnign it through gremlin function
-    send(filename, clientfd, server);
+    //will send file to server after running it through gremlin function
+    send(clientfd, server, file);
+
+    close(clientfd);
+    return 0;
 
 }
