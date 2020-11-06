@@ -95,11 +95,11 @@ int gremlin(char* packet_content) {
  * clientfd - the socket 
  * 
  */
-void send(int clientfd, struct sockaddr_in server, char *file) {
+void sendFile(int clientfd, struct sockaddr_in server, char *file) {
     char buffer[MAX_SIZE];
 
     int index;
-    FILE *file = fopen(file, "r");
+    FILE *f = fopen(file, "r");
     char put[150];
     sprintf(put, "PUT %s", file);
     sendto(clientfd, put, sizeof(put), 2048, (const struct sockaddr *)&serverAddress, sizeof(serverAddress));
@@ -108,7 +108,7 @@ void send(int clientfd, struct sockaddr_in server, char *file) {
     char packet_content[MAX_SIZE-14] = {0};
     int serverLength;
 
-    while(fgets(packet_content, sizeof(packet_content), file) != NULL){
+    while(fgets(packet_content, sizeof(packet_content), f) != NULL){
         char packet_content_holder[MAX_SIZE] = {0};
 
         int checksum = calculateChecksum(packet_content);
@@ -146,7 +146,7 @@ void send(int clientfd, struct sockaddr_in server, char *file) {
     index = recvfrom(clientfd, (char *)buffer, MAX_SIZE, MSG_WAITALL, (struct sockaddr *)&serverAddress, (socklen_t *)&serverLength);
     printf("%s\n", buffer);
 
-    fclose(file);
+    fclose(f);
 
     return;
 }
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
     server.sin_addr.s_addr = inet_addr(ip);
 
     // Will send file to server after running it through gremlin function
-    send(clientfd, server, file);
+    sendFile(clientfd, server, file);
 
     close(clientfd);
     return 0;
