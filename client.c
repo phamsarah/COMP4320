@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <string.h>
 #include <netdb.h>
+#include <stdlib.h>
 
 #define MAX_SIZE 128
 
