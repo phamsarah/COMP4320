@@ -85,7 +85,7 @@ int gremlin(char* packet_content) {
     }
 
     // Return correct delivery if packet has no loss or is not damaged
-    return 3;
+    return 0;
 }
 
 /**
@@ -98,6 +98,7 @@ int gremlin(char* packet_content) {
 void send(int clientfd, struct sockaddr_in server, char *file) {
     char buffer[MAX_SIZE];
 
+    int index;
     FILE *file = fopen(file, "r");
     char put[150];
     sprintf(put, "PUT %s", file);
@@ -111,14 +112,14 @@ void send(int clientfd, struct sockaddr_in server, char *file) {
         char packet_content_holder[MAX_SIZE] = {0};
 
         int checksum = calculateChecksum(packet_content);
-        int gremlin = gremlin(packet_content);
+        int grem = gremlin(packet_content);
 
         // Printing to the packet_content_holder, the index, checksum, and packet content
         // packet_content_holder also has a zero padded header
         sprintf(packet_content_holder, "%05d|%07i|%s", i, checksum, packet_content);
 
-        // This part is confusing?? 
-        if (gremlin < 0){
+        //increments the count when the grem function returns 2, which is for damaged packets
+        if (grem == 2){
             i++;
             continue;
         }
