@@ -155,7 +155,7 @@ void sendFile(int clientfd, struct sockaddr_in server, char *file) {
 int main(int argc, char *argv[]) {
 
     char *ip = "127.0.0.1";
-    char *file = "client.txt";
+    char *file = "text.txt";
     int port = 8080, clientfd;
     
     // Retrieves probablities of loss and damage from runtime arguments
@@ -165,11 +165,11 @@ int main(int argc, char *argv[]) {
     // Retrieves socket descriptor (-1 if failed)
     clientfd = socket(AF_INET, SOCK_DGRAM,0);
     if (clientfd == -1) {
-        perror("ERROR: Socket Failed to Open");
+        perror("ERROR: Socket Failed to Open\n");
         exit(0);
     }
 
-    printf("Success: Server Socket has been Created!");
+    printf("Success: Server Socket has been Created!\n");
 
     struct sockaddr_in server;
     server.sin_family = AF_INET;
