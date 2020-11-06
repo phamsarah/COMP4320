@@ -35,9 +35,7 @@ int connectToClient(){
      *   SOCK_DGRAM = is a datagram based protocol used by UDP; send one datagram and receive one reply then connection terminates
      *   0 = protocol of 0 causes socket() to use an unspecified default protocol appropriate for the requested socket type
     **/ 
-   //getaddrinfo(NULL, "3490", &serverAddress);
 
-   char *ip = "127.0.0.1";
    int portNo = 8080;
     if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0){
         // errx produces an error message
