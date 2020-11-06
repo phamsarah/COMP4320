@@ -14,7 +14,7 @@
  **/
 
 // sockaddr_in is a predefined struct in the in.h library, contains the information about the address coming in
-struct sockaddrin serverAddress;
+struct sockaddr_in serverAddress;
 
 // sockaddr_storage is from the socket.h library, defined to declare storage for automatic variables that is large and aligned enough for the socket address data structure of ANY family
 struct sockaddr_storage socketStorage;
@@ -95,7 +95,7 @@ int gremlin(char* packet_content) {
  * clientfd - the socket 
  * 
  */
-void send(int clientfd, struct sockaddrin server, char *file) {
+void send(int clientfd, struct sockaddr_in server, char *file) {
     char buffer[MAX_SIZE];
 
     FILE *file = fopen(file, "r");
@@ -105,6 +105,8 @@ void send(int clientfd, struct sockaddrin server, char *file) {
 
     int i = 0;
     char packet_content[MAX_SIZE-14] = {0};
+    int serverLength;
+
     while(fgets(packet_content, sizeof(packet_content), file) != NULL){
         char packet_content_holder[MAX_SIZE] = {0};
 
@@ -115,12 +117,35 @@ void send(int clientfd, struct sockaddrin server, char *file) {
         // packet_content_holder also has a zero padded header
         sprintf(packet_content_holder, "%05d|%07i|%s", i, checksum, packet_content);
 
-        
+        // This part is confusing?? 
         if (gremlin < 0){
             i++;
             continue;
         }
+
+        sendto(clientfd, packet_content_holder, MAX_SIZE, 2048, (const struct sockaddr *)&serverAddress, sizeof(serverAddress));
+        printf("File sent: %s\n", packet_content_holder);
+
+        serverLength = sizeof(serverAddress);
+        bzero(buffer, MAX_SIZE);
+
+        char bufferHolder[20];
+        int index = recvfrom(clientfd, (char *) bufferHolder, 48, MSG_WAITALL, (struct sockaddr *)&serverAddress, (socklen_t *)&serverLength);
+        bufferHolder[index] = '\0';
+        printf("Received File: %s \n", bufferHolder);
+        i++;
+
+        bzero(packet_content_holder, MAX_SIZE);
+
     }
+
+    char null = '\0';
+    sendto(clientfd, &null, 1, 2048, (const struct sockaddr *)&serverAddress, sizeof(serverAddress));
+
+    index = recvfrom(clientfd, (char *)buffer, MAX_SIZE, MSG_WAITALL, (struct sockaddr *)&serverAddress, (socklen_t *)&serverLength);
+    printf("%s\n", buffer);
+
+    fclose(file);
 
     return;
 }
