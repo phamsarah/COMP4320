@@ -46,7 +46,8 @@ void damagePacket(int bytes, char *packet_content){
  * buffer - the packet contents
 */
 int calculateChecksum(char* buffer) {
-    int i = 0, sum = 0;
+    int i = 0;
+    int sum = 0;
 
     while(buffer[i] != '\0'){
         sum += buffer[i];
@@ -101,8 +102,8 @@ void sendFile(int clientfd, struct sockaddr_in server, char *file) {
     int index;
     FILE *f = fopen(file, "r");
     char put[150];
-    sprintf(put, "PUT %s", file);
-    sendto(clientfd, put, sizeof(put), 2048, (const struct sockaddr *)&serverAddress, sizeof(serverAddress));
+    sprintf(put, "PUT %s\n", file);
+    sendto(clientfd, put, sizeof(put), 2048, (const struct sockaddr *)&server, sizeof(server));
 
     int i = 0;
     char packet_content[MAX_SIZE-14] = {0};
@@ -116,7 +117,7 @@ void sendFile(int clientfd, struct sockaddr_in server, char *file) {
 
         // Printing to the packet_content_holder, the index, checksum, and packet content
         // packet_content_holder also has a zero padded header
-        sprintf(packet_content_holder, "%05d|%07i|%s", i, checksum, packet_content);
+        sprintf(packet_content_holder, "%05d|%07i|%s\n", i, checksum, packet_content);
 
         //increments the count when the grem function returns 2, which is for damaged packets
         if (grem == 2){
@@ -124,14 +125,14 @@ void sendFile(int clientfd, struct sockaddr_in server, char *file) {
             continue;
         }
 
-        sendto(clientfd, packet_content_holder, MAX_SIZE, 2048, (const struct sockaddr *)&serverAddress, sizeof(serverAddress));
+        sendto(clientfd, packet_content_holder, MAX_SIZE, 2048, (const struct sockaddr *)&server, sizeof(server));
         printf("File sent: %s\n", packet_content_holder);
 
         serverLength = sizeof(serverAddress);
         bzero(buffer, MAX_SIZE);
 
         char bufferHolder[20];
-        int index = recvfrom(clientfd, (char *) bufferHolder, 48, MSG_WAITALL, (struct sockaddr *)&serverAddress, (socklen_t *)&serverLength);
+        int index = recvfrom(clientfd, (char *) bufferHolder, 48, MSG_WAITALL, (struct sockaddr *)&server, (socklen_t *)&serverLength);
         bufferHolder[index] = '\0';
         printf("Received File: %s \n", bufferHolder);
         i++;
@@ -140,10 +141,10 @@ void sendFile(int clientfd, struct sockaddr_in server, char *file) {
 
     }
 
-    char null = '\0';
-    sendto(clientfd, &null, 1, 2048, (const struct sockaddr *)&serverAddress, sizeof(serverAddress));
+    char end = '\0';
+    sendto(clientfd, &end, 1, 2048, (const struct sockaddr *)&server, sizeof(server));
 
-    index = recvfrom(clientfd, (char *)buffer, MAX_SIZE, MSG_WAITALL, (struct sockaddr *)&serverAddress, (socklen_t *)&serverLength);
+    index = recvfrom(clientfd, (char *)buffer, MAX_SIZE, MSG_WAITALL, (struct sockaddr *)&server, (socklen_t *)&serverLength);
     printf("%s\n", buffer);
 
     fclose(f);
@@ -155,7 +156,7 @@ void sendFile(int clientfd, struct sockaddr_in server, char *file) {
 int main(int argc, char *argv[]) {
 
     char *ip = "127.0.0.1";
-    char *file = "text.txt";
+    char *file = "test.txt";
     int port = 8080, clientfd;
     
     // Retrieves probablities of loss and damage from runtime arguments
@@ -169,7 +170,7 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
-    printf("Success: Server Socket has been Created!\n");
+    printf("Success: Client Socket has been Created!\n");
 
     struct sockaddr_in server;
     server.sin_family = AF_INET;

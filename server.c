@@ -145,7 +145,7 @@ void writeToFile(int serverSocket, struct sockaddr_storage socketStorage){
     // bzero erases data in the MAX_SIZE bytes of the memory starting at buffer location by writing zeros
     bzero(buffer, MAX_SIZE);
 
-    if(file == NULL) errx(1, "File creation error");
+    if(file == NULL) errx(1, "File creation error\n");
 
     // We loop through the buffer until we reach a null terminator \0
     while(character != '\0'){
@@ -169,7 +169,7 @@ void writeToFile(int serverSocket, struct sockaddr_storage socketStorage){
     checksum = atoi(parseStrToToken(1, holder_1, "|"));
     numOfPackets = atoi(parseStrToToken(0, holder_2, "|"));
 
-    if(!calculateChecksum(bufferHolder, checksum)) printf("This packet has an error!");
+    if(!calculateChecksum(bufferHolder, checksum)) printf("This packet has an error!\n");
 
     bzero(buffer, MAX_SIZE);
 
