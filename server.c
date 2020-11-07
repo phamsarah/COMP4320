@@ -71,6 +71,8 @@ int connectToClient(){
 
     printf("Success: Socket Address Binding\n");
 
+    printf("Server is listening for client...\n");
+
     socketAddressSize = sizeof(socketStorage); // We initialize a new socket that is the size of the socket storage
 
     return 0;
@@ -179,6 +181,7 @@ void writeToFile(int serverSocket, struct sockaddr_storage socketStorage){
 int main(void){
     connectToClient();
     printf("Server Socket: %i", sockfd);
+
     writeToFile(sockfd, socketStorage);
 
     return 0;

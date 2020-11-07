@@ -125,6 +125,7 @@ void sendFile(int clientfd, struct sockaddr_in server, char *file) {
             continue;
         }
 
+
         sendto(clientfd, packet_content_holder, MAX_SIZE, 2048, (const struct sockaddr *)&server, sizeof(server));
         printf("File sent: %s\n", packet_content_holder);
 
@@ -154,6 +155,11 @@ void sendFile(int clientfd, struct sockaddr_in server, char *file) {
 
 
 int main(int argc, char *argv[]) {
+
+    if(argc < 3){
+        printf("%s", "Please include damage probability and loss probability in runtime arguments");
+        exit(-1);
+    }
 
     char *ip = "127.0.0.1";
     char *file = "test.txt";
